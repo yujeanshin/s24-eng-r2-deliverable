@@ -37,20 +37,6 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
 
--- Prevent the author field of a created species from being changed
-create function public.species_columns_updateable()
-returns trigger as $$
-begin
-  if new.author <> old.author then
-    raise exception 'changing species author is not allowed';
-  end if;
-  return new;
-end;
-$$ language plpgsql security definer;
-create trigger columns_updateable
-  before update on public.species
-  for each row execute procedure public.species_columns_updateable();
-
 create type kingdom as enum ('Animalia', 'Plantae', 'Fungi', 'Protista', 'Archaea', 'Bacteria');
 
 -- Create a table for species
@@ -79,3 +65,17 @@ create policy "Users can update their created species." on species
 
 create policy "Users can delete their created species." on species
   for delete using (auth.uid() = author);
+
+-- Prevent the author field of a created species from being changed
+create function public.species_columns_updateable()
+returns trigger as $$
+begin
+  if new.author <> old.author then
+    raise exception 'changing species author is not allowed';
+  end if;
+  return new;
+end;
+$$ language plpgsql security definer;
+create trigger columns_updateable
+  before update on public.species
+  for each row execute procedure public.species_columns_updateable();
