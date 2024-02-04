@@ -120,12 +120,29 @@ export default function SpeciesDetailsDialog({ species, currentUser }: { species
     setIsEditing(false);
   };
 
-  const handleDelete = async (e: MouseEvent) => {
+  const handleDelete = (e: MouseEvent) => {
     e.preventDefault();
     // OK: true --> continue. Cancel: false --> exit function early
     if (!window.confirm("Delete the " + species.scientific_name + " species?")) {
       return;
     }
+
+    onDelete().then(onDeleteConfirm, onDeleteError);
+  };
+
+  const onDeleteError = () => {
+    return toast({
+      title: "Something went wrong.",
+      variant: "destructive",
+    });
+  };
+  const onDeleteConfirm = () => {
+    return toast({
+      title: "Species deleted.",
+      description: "Deleted the " + species.scientific_name + " species.",
+    });
+  };
+  const onDelete = async () => {
     const supabase = createBrowserSupabaseClient();
 
     const { error } = await supabase.from("species").delete().eq("id", species.id);
