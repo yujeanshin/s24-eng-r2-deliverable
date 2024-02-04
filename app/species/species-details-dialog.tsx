@@ -120,6 +120,32 @@ export default function SpeciesDetailsDialog({ species, currentUser }: { species
     setIsEditing(false);
   };
 
+  const handleDelete = async (e: MouseEvent) => {
+    e.preventDefault();
+    // OK: true --> continue. Cancel: false --> exit function early
+    if (!window.confirm("Delete the " + species.scientific_name + " species?")) {
+      return;
+    }
+    const supabase = createBrowserSupabaseClient();
+
+    const { error } = await supabase.from("species").delete().eq("id", species.id);
+
+    if (error) {
+      return toast({
+        title: "Something went wrong.",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+
+    router.refresh();
+
+    return toast({
+      title: "Species deleted.",
+      description: "Deleted the " + species.scientific_name + " species.",
+    });
+  };
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -264,9 +290,18 @@ export default function SpeciesDetailsDialog({ species, currentUser }: { species
                     </>
                   ) : (
                     // editing mode
-                    <Button onClick={startEditing} type="button" className="ml-1 mr-1 flex-auto">
-                      Edit Species
-                    </Button>
+                    <>
+                      <Button onClick={startEditing} type="button" className="ml-1 mr-1 flex-auto">
+                        Edit Species
+                      </Button>
+                      <Button
+                        onClick={handleDelete}
+                        type="button"
+                        className="ml-1 mr-1 flex-auto bg-red-700 hover:bg-red-500"
+                      >
+                        Delete
+                      </Button>
+                    </>
                   )}
                 </div>
               )}
