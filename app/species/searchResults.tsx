@@ -1,7 +1,9 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
-import { Suspense, useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 
 // id (integer)
 // title (string)
@@ -41,12 +43,14 @@ interface SearchResult {
 
 // export default function SearchResults({ q }: { q: string }) {
 export default function SearchResults() {
+  const [loadingState, setLoadingState] = useState<"Loading" | "Resolved" | "Error" | "Not Started">("Not Started");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [searchInput, setSearchInput] = useState("");
 
-  const [showResults, setShowResults] = useState(false);
-  const search = () => {
-    setShowResults(true);
+  // const [showResults, setShowResults] = useState(false);
+  const search = (e: FormEvent) => {
+    e.preventDefault();
+    setLoadingState("Loading");
   };
 
   const url = "https://en.wikipedia.org/w/rest.php/v1/search/page";
@@ -57,13 +61,29 @@ export default function SearchResults() {
       fetch(query)
         .then((response) => {
           if (!response.ok) {
-            setShowResults(false);
-            throw new Error("Result not found.");
+            setLoadingState("Error");
+            toast({
+              title: "Something went wrong.",
+              description: "No results found.",
+              variant: "destructive",
+            });
           }
           return response.json();
         })
-        .then((data) => setResults(data?.pages))
+        .then((data) => {
+          setResults(data?.pages);
+          setLoadingState("Resolved");
+          console.log(results);
+          if (results.length === 0) {
+            toast({
+              title: "No results found.",
+              description: "No results for " + searchInput.trim() + ".",
+              variant: "destructive",
+            });
+          }
+        })
         .catch((err) => {
+          setLoadingState("Error");
           toast({
             title: "Something went wrong.",
             description: "" + err,
@@ -72,55 +92,30 @@ export default function SearchResults() {
         }),
     ];
     console.log(results);
-    if (showResults) {
+    if (loadingState === "Loading") {
       fetchResults();
     }
-  });
-
-  // try {
-  //   const response = await fetch(query);
-  //   const data = await response.json();
-  //   setResults(data?.pages);
-  // } catch (error) {
-  //     console.log(error)
-  // }
-
-  // const fetchResults = async () => {
-  //   const response = await fetch(query);
-  //   if (!response.ok) {
-  //     throw Error(response.statusText);
-  //   }
-  //   const data = await response.json();
-  //   setResults(data?.pages);
-  // };
-
-  // useEffect(() => {
-  //   fetchResults();
-  //   console.log(results);
-  // }, []);
+  }, [loadingState]);
 
   return (
-    <div className="flex w-full max-w-sm items-center space-x-2">
+    <form className="flex w-full max-w-sm items-center space-x-0" onSubmit={search}>
       <Input
         type="text"
         placeholder="Search species to autofill"
         value={searchInput}
         onChange={(event) => {
-          setShowResults(false);
           setSearchInput(event.target.value);
         }}
       />
-      <Button type="button" onClick={search}>
-        Search
-      </Button>
+      <Button type="submit">Search</Button>
 
-      {showResults && (
-        <Suspense fallback={"Loading search results..."}>
-          <div className="results-container">
-            {results?.map((result: SearchResult) => <div key={result.id}>{result.title}</div>)}
-          </div>
-        </Suspense>
+      {loadingState === "Resolved" ? (
+        <div className="mx-2 w-max space-y-2">
+          {results?.map((result: SearchResult) => <div key={result.id}>{result.title}</div>)}
+        </div>
+      ) : (
+        loadingState === "Loading" && <div className="mx-2 w-max space-y-2">Loading results...</div>
       )}
-    </div>
+    </form>
   );
 }

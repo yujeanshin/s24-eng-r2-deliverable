@@ -20,7 +20,6 @@ import { Suspense, useState, type BaseSyntheticEvent, type MouseEvent } from "re
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import AuthorsList from "./author";
-import SearchResults from "./searchResults";
 
 type Species = Database["public"]["Tables"]["species"]["Row"];
 
@@ -184,9 +183,6 @@ export default function SpeciesDetailsDialog({ species, currentUser }: { species
             </Suspense>
           </DialogDescription>
         </DialogHeader>
-
-        {/* Search Bar */}
-        {isEditing && <SearchResults />}
 
         <Form {...form}>
           <form onSubmit={(e: BaseSyntheticEvent) => void form.handleSubmit(onSubmit)(e)}>
