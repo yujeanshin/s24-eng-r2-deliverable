@@ -16,9 +16,10 @@ import { createBrowserSupabaseClient } from "@/lib/client-utils";
 import { type Database } from "@/lib/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { useState, type BaseSyntheticEvent, type MouseEvent } from "react";
+import { Suspense, useState, type BaseSyntheticEvent, type MouseEvent } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import AuthorsList from "./author";
 
 type Species = Database["public"]["Tables"]["species"]["Row"];
 
@@ -172,6 +173,13 @@ export default function SpeciesDetailsDialog({ species, currentUser }: { species
         <DialogHeader>
           <DialogTitle>{species.scientific_name}</DialogTitle>
           {species.common_name && <DialogDescription>{species.common_name}</DialogDescription>}
+          {/* added author's name */}
+          <DialogDescription>
+            Author:{" "}
+            <Suspense fallback={"Loading"}>
+              <AuthorsList species_author={species.author} />
+            </Suspense>
+          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={(e: BaseSyntheticEvent) => void form.handleSubmit(onSubmit)(e)}>
@@ -311,6 +319,7 @@ export default function SpeciesDetailsDialog({ species, currentUser }: { species
                       <Button onClick={startEditing} type="button" className="ml-1 mr-1 flex-auto">
                         Edit Species
                       </Button>
+                      {/* added delete button */}
                       <Button
                         onClick={handleDelete}
                         type="button"
