@@ -20,6 +20,7 @@ import { Suspense, useState, type BaseSyntheticEvent, type MouseEvent } from "re
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import AuthorsList from "./author";
+import SearchResults from "./searchResults";
 
 type Species = Database["public"]["Tables"]["species"]["Row"];
 
@@ -178,11 +179,15 @@ export default function SpeciesDetailsDialog({ species, currentUser }: { species
           {/* added author's name */}
           <DialogDescription>
             Author:{" "}
-            <Suspense fallback={"Loading"}>
+            <Suspense fallback={"Loading..."}>
               <AuthorsList species_author={species.author} />
             </Suspense>
           </DialogDescription>
         </DialogHeader>
+
+        {/* Search Bar */}
+        <SearchResults />
+
         <Form {...form}>
           <form onSubmit={(e: BaseSyntheticEvent) => void form.handleSubmit(onSubmit)(e)}>
             <div className="grid w-full items-center gap-4">
