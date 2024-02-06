@@ -34,9 +34,9 @@ interface SearchResult {
   description: string;
   thumbnail: Thumbnail | null;
 }
-interface SearchOverall {
-  pages: SearchResult[];
-}
+// interface SearchOverall {
+//   pages: SearchResult[];
+// }
 
 const search = () => {
   null;
@@ -50,19 +50,36 @@ export default function SearchResults() {
   const url = "https://en.wikipedia.org/w/rest.php/v1/search/page";
   const query = url + "?q=" + searchInput.trim() + "&limit=" + num_results;
 
-  const fetchResults = async () => {
-    const response = await fetch(query);
-    if (!response.ok) {
-      throw Error(response.statusText);
-    }
-    const data = await response.json();
-    setResults(data?.pages);
-  };
-
   useEffect(() => {
+    const fetchResults = () => [
+      fetch(query)
+        .then((response) => response.json())
+        .then((data) => setResults(data?.pages)),
+    ];
     fetchResults();
-    console.log(results);
-  }, []);
+  });
+
+  // try {
+  //   const response = await fetch(query);
+  //   const data = await response.json();
+  //   setResults(data?.pages);
+  // } catch (error) {
+  //     console.log(error);
+  // }
+
+  // const fetchResults = async () => {
+  //   const response = await fetch(query);
+  //   if (!response.ok) {
+  //     throw Error(response.statusText);
+  //   }
+  //   const data = await response.json();
+  //   setResults(data?.pages);
+  // };
+
+  // useEffect(() => {
+  //   fetchResults();
+  //   console.log(results);
+  // }, []);
 
   return (
     <div className="flex w-full max-w-sm items-center space-x-2">
@@ -77,9 +94,7 @@ export default function SearchResults() {
       </Button>
       <Suspense fallback={"Loading search results..."}>
         <div className="results-container">
-          {results.map((result: SearchResult) => (
-            <div key={result.id}>{result.title}</div>
-          ))}
+          {results?.map((result: SearchResult) => <div key={result.id}>{result.title}</div>)}
         </div>
       </Suspense>
     </div>
