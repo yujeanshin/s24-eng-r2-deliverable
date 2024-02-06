@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { toast } from "@/components/ui/use-toast";
 import { Suspense, useEffect, useState } from "react";
 
 // id (integer)
@@ -38,14 +39,15 @@ interface SearchResult {
 //   pages: SearchResult[];
 // }
 
-const search = () => {
-  null;
-};
-
 // export default function SearchResults({ q }: { q: string }) {
 export default function SearchResults() {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [searchInput, setSearchInput] = useState("");
+
+  const [showResults, setShowResults] = useState(false);
+  const search = () => {
+    setShowResults(true);
+  };
 
   const url = "https://en.wikipedia.org/w/rest.php/v1/search/page";
   const query = url + "?q=" + searchInput.trim() + "&limit=" + num_results;
@@ -53,10 +55,26 @@ export default function SearchResults() {
   useEffect(() => {
     const fetchResults = () => [
       fetch(query)
-        .then((response) => response.json())
-        .then((data) => setResults(data?.pages)),
+        .then((response) => {
+          if (!response.ok) {
+            setShowResults(false);
+            throw new Error("Result not found.");
+          }
+          return response.json();
+        })
+        .then((data) => setResults(data?.pages))
+        .catch((err) => {
+          toast({
+            title: "Something went wrong.",
+            description: "" + err,
+            variant: "destructive",
+          });
+        }),
     ];
-    fetchResults();
+    console.log(results);
+    if (showResults) {
+      fetchResults();
+    }
   });
 
   // try {
@@ -64,7 +82,7 @@ export default function SearchResults() {
   //   const data = await response.json();
   //   setResults(data?.pages);
   // } catch (error) {
-  //     console.log(error);
+  //     console.log(error)
   // }
 
   // const fetchResults = async () => {
@@ -87,16 +105,22 @@ export default function SearchResults() {
         type="text"
         placeholder="Search species to autofill"
         value={searchInput}
-        onChange={(event) => setSearchInput(event.target.value)}
+        onChange={(event) => {
+          setShowResults(false);
+          setSearchInput(event.target.value);
+        }}
       />
       <Button type="button" onClick={search}>
         Search
       </Button>
-      <Suspense fallback={"Loading search results..."}>
-        <div className="results-container">
-          {results?.map((result: SearchResult) => <div key={result.id}>{result.title}</div>)}
-        </div>
-      </Suspense>
+
+      {showResults && (
+        <Suspense fallback={"Loading search results..."}>
+          <div className="results-container">
+            {results?.map((result: SearchResult) => <div key={result.id}>{result.title}</div>)}
+          </div>
+        </Suspense>
+      )}
     </div>
   );
 }

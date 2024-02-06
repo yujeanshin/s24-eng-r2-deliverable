@@ -186,7 +186,7 @@ export default function SpeciesDetailsDialog({ species, currentUser }: { species
         </DialogHeader>
 
         {/* Search Bar */}
-        <SearchResults />
+        {isEditing && <SearchResults />}
 
         <Form {...form}>
           <form onSubmit={(e: BaseSyntheticEvent) => void form.handleSubmit(onSubmit)(e)}>
