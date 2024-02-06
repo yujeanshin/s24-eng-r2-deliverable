@@ -42,6 +42,7 @@ const speciesSchema = z.object({
     // Transform empty string or only whitespace input to null before form submission, and trim whitespace otherwise
     .transform((val) => (!val || val.trim() === "" ? null : val.trim())),
   kingdom: kingdoms,
+  endangered: z.boolean().nullable().optional(),
   total_population: z.number().int().positive().min(1).nullable(),
   image: z
     .string()
@@ -69,6 +70,7 @@ const defaultValues: Partial<FormData> = {
   scientific_name: "",
   common_name: null,
   kingdom: "Animalia",
+  endangered: null,
   total_population: null,
   image: null,
   description: null,
@@ -95,6 +97,7 @@ export default function AddSpeciesDialog({ userId }: { userId: string }) {
         author: userId,
         common_name: input.common_name,
         description: input.description,
+        endangered: input.endangered,
         kingdom: input.kingdom,
         scientific_name: input.scientific_name,
         total_population: input.total_population,
@@ -196,6 +199,40 @@ export default function AddSpeciesDialog({ userId }: { userId: string }) {
                               {kingdom}
                             </SelectItem>
                           ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              {/* new endangered field */}
+              <FormField
+                control={form.control}
+                name="endangered"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Endangered?</FormLabel>
+                    <Select
+                      onValueChange={(value) => field.onChange(value === "T" ? true : value === "F" ? false : null)}
+                      value={field.value ? "T" : field.value === false ? "F" : "D"}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select endangered status" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectItem key={2} value={"D"}>
+                            Select Option
+                          </SelectItem>
+                          <SelectItem key={1} value={"T"}>
+                            True
+                          </SelectItem>
+                          <SelectItem key={0} value={"F"}>
+                            False
+                          </SelectItem>
                         </SelectGroup>
                       </SelectContent>
                     </Select>

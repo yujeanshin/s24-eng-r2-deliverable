@@ -42,6 +42,7 @@ const speciesSchema = z.object({
     // Transform empty string or only whitespace input to null before form submission, and trim whitespace otherwise
     .transform((val) => (!val || val.trim() === "" ? null : val.trim())),
   kingdom: kingdoms,
+  endangered: z.boolean().nullable().optional(),
   total_population: z.number().int().positive().min(1).nullable(),
   image: z
     .string()
@@ -68,6 +69,7 @@ export default function SpeciesDetailsDialog({ species, currentUser }: { species
     scientific_name: species.scientific_name,
     common_name: species.common_name,
     kingdom: species.kingdom,
+    endangered: species.endangered,
     total_population: species.total_population,
     image: species.image,
     description: species.description,
@@ -237,6 +239,41 @@ export default function SpeciesDetailsDialog({ species, currentUser }: { species
                               {kingdom}
                             </SelectItem>
                           ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              {/* new endangered field */}
+              <FormField
+                control={form.control}
+                name="endangered"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Endangered?</FormLabel>
+                    <Select
+                      disabled={!isEditing}
+                      onValueChange={(value) => field.onChange(value === "T" ? true : value === "F" ? false : null)}
+                      value={field.value ? "T" : field.value === false ? "F" : "D"}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select endangered status" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectItem key={2} value={"D"}>
+                            Select Option
+                          </SelectItem>
+                          <SelectItem key={1} value={"T"}>
+                            True
+                          </SelectItem>
+                          <SelectItem key={0} value={"F"}>
+                            False
+                          </SelectItem>
                         </SelectGroup>
                       </SelectContent>
                     </Select>
