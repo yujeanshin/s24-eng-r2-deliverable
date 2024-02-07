@@ -73,7 +73,7 @@ export default function SearchResults({
     if (loadingState === "Loading") {
       fetchResults();
     } else if (loadingState === "Resolved") {
-      if (results === null || results.length === 0) {
+      if (results === null || results === undefined || results.length === 0) {
         toast({
           title: "No results found.",
           description: 'No results for "' + searchInput.trim() + '"',
@@ -92,7 +92,7 @@ export default function SearchResults({
   };
 
   return (
-    <form className="flex w-full max-w-sm items-center space-x-0" onSubmit={search}>
+    <form className="flex w-full max-w-fit items-center space-x-2" onSubmit={search}>
       <Input
         type="text"
         placeholder="Search species to autofill"
@@ -104,7 +104,7 @@ export default function SearchResults({
       <Button type="submit">Search</Button>
 
       {loadingState === "Resolved" ? (
-        <div className="mx-2 w-max space-y-2">
+        <div className="mx-2 w-fit space-y-2">
           {results?.map((result: SearchResult) => (
             <Button
               type="button"
