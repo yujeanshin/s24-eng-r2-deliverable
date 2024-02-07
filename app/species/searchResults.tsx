@@ -1,3 +1,5 @@
+// used Wikipedia REST API found at https://www.mediawiki.org/wiki/API:REST_API/Reference
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
@@ -28,11 +30,13 @@ export default function SearchResults({
 }: {
   setSearchSelect: Dispatch<SetStateAction<SearchVal | null>>;
 }) {
+  // used to control when search results are displayed
   const [loadingState, setLoadingState] = useState<"Loading" | "Resolved" | "Error" | "Not Started">("Not Started");
+
   const [results, setResults] = useState<SearchResult[]>([]);
   const [searchInput, setSearchInput] = useState("");
 
-  // const [showResults, setShowResults] = useState(false);
+  // runs when search is submitted
   const search = (e: FormEvent) => {
     e.preventDefault();
     setLoadingState("Loading");
@@ -42,9 +46,9 @@ export default function SearchResults({
   const query = url + "?q=" + searchInput.trim() + "&limit=" + num_results;
 
   useEffect(() => {
-    const fetchResults = () => [
+    const fetchResults = () => {
       fetch(query)
-        .then((response) => {
+        .then(async (response) => {
           if (!response.ok) {
             setLoadingState("Error");
             toast({
@@ -53,12 +57,16 @@ export default function SearchResults({
               variant: "destructive",
             });
           }
-          return response.json();
+          const data = await response.json();
+          return data;
         })
-        .then((data) => {
-          setResults(data?.pages);
-          setLoadingState("Resolved");
-          console.log(results);
+        .then((data: { pages: SearchResult[] } | undefined) => {
+          if (data?.pages && Array.isArray(data.pages)) {
+            setResults(data.pages);
+            setLoadingState("Resolved");
+          } else {
+            throw new Error("Invalid data format");
+          }
         })
         .catch((err) => {
           setLoadingState("Error");
@@ -67,9 +75,8 @@ export default function SearchResults({
             description: "" + err,
             variant: "destructive",
           });
-        }),
-    ];
-    console.log(results);
+        });
+    };
     if (loadingState === "Loading") {
       fetchResults();
     } else if (loadingState === "Resolved") {
@@ -81,7 +88,7 @@ export default function SearchResults({
         });
       }
     }
-  }, [loadingState]);
+  }, [loadingState]); // should only depend on changes in loadingState
 
   const handleClick = (e: MouseEvent) => {
     const searchSelect: SearchVal = {
@@ -110,7 +117,7 @@ export default function SearchResults({
               type="button"
               variant="outline"
               key={result.id}
-              description={result.description}
+              description={result?.description}
               url={result?.thumbnail?.url}
               onClick={handleClick}
             >

@@ -152,7 +152,6 @@ export default function AddSpeciesDialog({ userId }: { userId: string }) {
 
   const [searchSelect, setSearchSelect] = useState<SearchVal | null>(null);
   useEffect(() => {
-    console.log(searchSelect);
     getResults(searchSelect);
   }, [searchSelect]);
 
