@@ -19,7 +19,7 @@ import { toast } from "@/components/ui/use-toast";
 import { createBrowserSupabaseClient } from "@/lib/client-utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { useState, type BaseSyntheticEvent } from "react";
+import { useEffect, useState, type BaseSyntheticEvent } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import SearchResults from "./searchResults";
@@ -77,6 +77,11 @@ const defaultValues: Partial<FormData> = {
   description: null,
 };
 
+export interface SearchVal {
+  description: string | null;
+  url: string | null;
+}
+
 export default function AddSpeciesDialog({ userId }: { userId: string }) {
   const router = useRouter();
 
@@ -133,6 +138,24 @@ export default function AddSpeciesDialog({ userId }: { userId: string }) {
     });
   };
 
+  const getResults = (search: SearchVal | null) => {
+    form.reset({
+      scientific_name: "",
+      common_name: null,
+      kingdom: "Animalia",
+      endangered: null,
+      total_population: null,
+      image: search?.url ? "https:" + search.url : null,
+      description: search?.description,
+    });
+  };
+
+  const [searchSelect, setSearchSelect] = useState<SearchVal | null>(null);
+  useEffect(() => {
+    console.log(searchSelect);
+    getResults(searchSelect);
+  }, [searchSelect]);
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -150,7 +173,7 @@ export default function AddSpeciesDialog({ userId }: { userId: string }) {
         </DialogHeader>
 
         {/* Search Bar */}
-        <SearchResults />
+        <SearchResults setSearchSelect={setSearchSelect} />
 
         <Form {...form}>
           <form onSubmit={(e: BaseSyntheticEvent) => void form.handleSubmit(onSubmit)(e)}>

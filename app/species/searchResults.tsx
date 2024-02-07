@@ -1,23 +1,8 @@
-"use client";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
-import { useEffect, useState, type FormEvent } from "react";
-
-// id (integer)
-// title (string)
-// description (string)
-// thumbnail.url (string)
-
-// show top 3 titles -> pick?
-
-// /search/page?q=search terms
-// GET
-// application/json
-// return pages object containing array of search results
-
-// type Species = Database["public"]["Tables"]["species"]["Row"];
+import { useEffect, useState, type Dispatch, type FormEvent, type MouseEvent, type SetStateAction } from "react";
+import { type SearchVal } from "./add-species-dialog";
 
 const num_results = 3;
 
@@ -37,12 +22,12 @@ interface SearchResult {
   description: string;
   thumbnail: Thumbnail | null;
 }
-// interface SearchOverall {
-//   pages: SearchResult[];
-// }
 
-// export default function SearchResults({ q }: { q: string }) {
-export default function SearchResults() {
+export default function SearchResults({
+  setSearchSelect,
+}: {
+  setSearchSelect: Dispatch<SetStateAction<SearchVal | null>>;
+}) {
   const [loadingState, setLoadingState] = useState<"Loading" | "Resolved" | "Error" | "Not Started">("Not Started");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [searchInput, setSearchInput] = useState("");
@@ -74,18 +59,11 @@ export default function SearchResults() {
           setResults(data?.pages);
           setLoadingState("Resolved");
           console.log(results);
-          if (results.length === 0) {
-            toast({
-              title: "No results found.",
-              description: "No results for " + searchInput.trim() + ".",
-              variant: "destructive",
-            });
-          }
         })
         .catch((err) => {
           setLoadingState("Error");
           toast({
-            title: "Something went wrong.",
+            title: "No results found.",
             description: "" + err,
             variant: "destructive",
           });
@@ -94,8 +72,24 @@ export default function SearchResults() {
     console.log(results);
     if (loadingState === "Loading") {
       fetchResults();
+    } else if (loadingState === "Resolved") {
+      if (results === null || results.length === 0) {
+        toast({
+          title: "No results found.",
+          description: 'No results for "' + searchInput.trim() + '"',
+          variant: "destructive",
+        });
+      }
     }
   }, [loadingState]);
+
+  const handleClick = (e: MouseEvent) => {
+    const searchSelect: SearchVal = {
+      description: e.currentTarget.getAttribute("description"),
+      url: e.currentTarget.getAttribute("url"),
+    };
+    setSearchSelect(searchSelect);
+  };
 
   return (
     <form className="flex w-full max-w-sm items-center space-x-0" onSubmit={search}>
@@ -111,7 +105,18 @@ export default function SearchResults() {
 
       {loadingState === "Resolved" ? (
         <div className="mx-2 w-max space-y-2">
-          {results?.map((result: SearchResult) => <div key={result.id}>{result.title}</div>)}
+          {results?.map((result: SearchResult) => (
+            <Button
+              type="button"
+              variant="outline"
+              key={result.id}
+              description={result.description}
+              url={result?.thumbnail?.url}
+              onClick={handleClick}
+            >
+              {result.title}
+            </Button>
+          ))}
         </div>
       ) : (
         loadingState === "Loading" && <div className="mx-2 w-max space-y-2">Loading results...</div>
